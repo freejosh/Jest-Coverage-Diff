@@ -2048,14 +2048,20 @@ function run() {
             let commentId = null;
             child_process_1.execSync(commandToRun);
             const codeCoverageNew = (JSON.parse(fs_1.default.readFileSync('coverage-summary.json').toString()));
-            child_process_1.execSync('/usr/bin/git fetch');
-            child_process_1.execSync('/usr/bin/git stash');
-            child_process_1.execSync(`/usr/bin/git checkout --progress --force ${branchNameBase}`);
-            if (commandAfterSwitch) {
-                child_process_1.execSync(commandAfterSwitch);
+            let codeCoverageOld = {};
+            try {
+                child_process_1.execSync('/usr/bin/git fetch');
+                child_process_1.execSync('/usr/bin/git stash');
+                child_process_1.execSync(`/usr/bin/git checkout --progress --force ${branchNameBase}`);
+                if (commandAfterSwitch) {
+                    child_process_1.execSync(commandAfterSwitch);
+                }
+                child_process_1.execSync(commandToRun);
+                codeCoverageOld = (JSON.parse(fs_1.default.readFileSync('coverage-summary.json').toString()));
             }
-            child_process_1.execSync(commandToRun);
-            const codeCoverageOld = (JSON.parse(fs_1.default.readFileSync('coverage-summary.json').toString()));
+            catch (err) {
+                // do nothing
+            }
             const currentDirectory = child_process_1.execSync('pwd')
                 .toString()
                 .trim();

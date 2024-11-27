@@ -35,16 +35,23 @@ async function run(): Promise<void> {
     const codeCoverageNew = <CoverageReport>(
       JSON.parse(fs.readFileSync('coverage-summary.json').toString())
     )
-    execSync('/usr/bin/git fetch')
-    execSync('/usr/bin/git stash')
-    execSync(`/usr/bin/git checkout --progress --force ${branchNameBase}`)
-    if (commandAfterSwitch) {
-      execSync(commandAfterSwitch)
+
+    let codeCoverageOld = {}
+    try {
+      execSync('/usr/bin/git fetch')
+      execSync('/usr/bin/git stash')
+      execSync(`/usr/bin/git checkout --progress --force ${branchNameBase}`)
+      if (commandAfterSwitch) {
+        execSync(commandAfterSwitch)
+      }
+      execSync(commandToRun)
+      codeCoverageOld = <CoverageReport>(
+        JSON.parse(fs.readFileSync('coverage-summary.json').toString())
+      )
+    } catch (err) {
+      // do nothing
     }
-    execSync(commandToRun)
-    const codeCoverageOld = <CoverageReport>(
-      JSON.parse(fs.readFileSync('coverage-summary.json').toString())
-    )
+
     const currentDirectory = execSync('pwd')
       .toString()
       .trim()
