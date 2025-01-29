@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {execSync} from 'child_process'
 import fs from 'fs'
+import path from 'path'
 import {CoverageReport} from './Model/CoverageReport'
 import {DiffChecker} from './DiffChecker'
 import {Octokit} from '@octokit/core'
@@ -31,22 +32,40 @@ async function run(): Promise<void> {
       totalDelta = Number(rawTotalDelta)
     }
     let commentId = null
-    execSync(commandToRun)
+
+    let headCoveragePath = path.resolve(
+      process.cwd(),
+      core.getInput('headCoveragePath')
+    )
+    if (!fs.existsSync(headCoveragePath)) {
+      execSync(commandToRun)
+      headCoveragePath = 'coverage-summary.json'
+    }
+
     const codeCoverageNew = <CoverageReport>(
-      JSON.parse(fs.readFileSync('coverage-summary.json').toString())
+      JSON.parse(fs.readFileSync(headCoveragePath).toString())
     )
 
     let codeCoverageOld = {}
     try {
-      execSync('/usr/bin/git fetch')
-      execSync('/usr/bin/git stash')
-      execSync(`/usr/bin/git checkout --progress --force ${branchNameBase}`)
-      if (commandAfterSwitch) {
-        execSync(commandAfterSwitch)
+      let baseCoveragePath = path.resolve(
+        process.cwd(),
+        core.getInput('baseCoveragePath')
+      )
+      if (!fs.existsSync(baseCoveragePath)) {
+        execSync('/usr/bin/git fetch')
+        execSync('/usr/bin/git stash')
+        execSync(`/usr/bin/git checkout --progress --force ${branchNameBase}`)
+        if (commandAfterSwitch) {
+          execSync(commandAfterSwitch)
+        }
+        execSync(commandToRun)
+
+        baseCoveragePath = 'coverage-summary.json'
       }
-      execSync(commandToRun)
+
       codeCoverageOld = <CoverageReport>(
-        JSON.parse(fs.readFileSync('coverage-summary.json').toString())
+        JSON.parse(fs.readFileSync(baseCoveragePath).toString())
       )
     } catch (err) {
       // do nothing

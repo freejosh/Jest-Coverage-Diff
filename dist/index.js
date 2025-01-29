@@ -2020,6 +2020,7 @@ const core = __importStar(__webpack_require__(470));
 const github = __importStar(__webpack_require__(469));
 const child_process_1 = __webpack_require__(129);
 const fs_1 = __importDefault(__webpack_require__(747));
+const path_1 = __importDefault(__webpack_require__(622));
 const DiffChecker_1 = __webpack_require__(563);
 function run() {
     var _a, _b;
@@ -2046,18 +2047,26 @@ function run() {
                 totalDelta = Number(rawTotalDelta);
             }
             let commentId = null;
-            child_process_1.execSync(commandToRun);
-            const codeCoverageNew = (JSON.parse(fs_1.default.readFileSync('coverage-summary.json').toString()));
+            let headCoveragePath = path_1.default.resolve(process.cwd(), core.getInput('headCoveragePath'));
+            if (!fs_1.default.existsSync(headCoveragePath)) {
+                child_process_1.execSync(commandToRun);
+                headCoveragePath = 'coverage-summary.json';
+            }
+            const codeCoverageNew = (JSON.parse(fs_1.default.readFileSync(headCoveragePath).toString()));
             let codeCoverageOld = {};
             try {
-                child_process_1.execSync('/usr/bin/git fetch');
-                child_process_1.execSync('/usr/bin/git stash');
-                child_process_1.execSync(`/usr/bin/git checkout --progress --force ${branchNameBase}`);
-                if (commandAfterSwitch) {
-                    child_process_1.execSync(commandAfterSwitch);
+                let baseCoveragePath = path_1.default.resolve(process.cwd(), core.getInput('baseCoveragePath'));
+                if (!fs_1.default.existsSync(baseCoveragePath)) {
+                    child_process_1.execSync('/usr/bin/git fetch');
+                    child_process_1.execSync('/usr/bin/git stash');
+                    child_process_1.execSync(`/usr/bin/git checkout --progress --force ${branchNameBase}`);
+                    if (commandAfterSwitch) {
+                        child_process_1.execSync(commandAfterSwitch);
+                    }
+                    child_process_1.execSync(commandToRun);
+                    baseCoveragePath = 'coverage-summary.json';
                 }
-                child_process_1.execSync(commandToRun);
-                codeCoverageOld = (JSON.parse(fs_1.default.readFileSync('coverage-summary.json').toString()));
+                codeCoverageOld = (JSON.parse(fs_1.default.readFileSync(baseCoveragePath).toString()));
             }
             catch (err) {
                 // do nothing
