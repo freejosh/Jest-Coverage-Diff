@@ -84,7 +84,9 @@ async function run(): Promise<void> {
       !fullCoverage,
       `${currentDirectory}/`
     )
-    if (coverageDetails.length === 0) {
+    if (Object.keys(codeCoverageOld).length === 0) {
+      messageToPost = 'No base branch code coverage'
+    } else if (coverageDetails.length === 0) {
       messageToPost =
         'No changes to code coverage between the base branch and the head branch'
     } else {

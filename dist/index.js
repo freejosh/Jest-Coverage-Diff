@@ -2078,7 +2078,10 @@ function run() {
             let messageToPost = `## Test coverage results :test_tube: \n
     Code coverage diff between base branch:${branchNameBase} and head branch: ${branchNameHead} \n\n`;
             const coverageDetails = diffChecker.getCoverageDetails(!fullCoverage, `${currentDirectory}/`);
-            if (coverageDetails.length === 0) {
+            if (Object.keys(codeCoverageOld).length === 0) {
+                messageToPost = 'No base branch code coverage';
+            }
+            else if (coverageDetails.length === 0) {
                 messageToPost =
                     'No changes to code coverage between the base branch and the head branch';
             }
