@@ -23,7 +23,7 @@ inputs:
   useSameComment:
     description: 'While commenting on the PR update the exisiting comment'
     default: false
-  baseCoveragePath:
+  headCoveragePath:
     description: 'Path to cached coverage file for head branch. If not specified, task will run Jest with runCommand'
     default: ''
   baseCoveragePath:
